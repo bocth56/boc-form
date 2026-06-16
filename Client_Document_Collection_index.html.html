@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Document Submission / 客户资料提交 - BOC</title>
+<style>
+  :root{
+    --navy:#1F4E78;
+    --navy-light:#2E6CA4;
+    --green:#1e7e34;
+    --green-bg:#d4edda;
+    --red:#c0392b;
+    --red-bg:#fdecea;
+    --gray-bg:#f4f6f8;
+    --border:#d0d7de;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:Arial, "Microsoft YaHei", "PingFang SC", Helvetica, sans-serif;
+    background:var(--gray-bg);
+    margin:0;
+    padding:24px;
+    color:#222;
+  }
+  .container{max-width:1100px;margin:0 auto;}
+  h1{color:var(--navy);margin-bottom:4px;font-size:24px;}
+  .subtitle{color:#555;margin-top:0;margin-bottom:20px;font-size:14px;line-height:1.6;}
+  .layout{display:flex;gap:24px;align-items:flex-start;}
+  form{flex:1 1 640px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;}
+  aside{flex:0 0 280px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;position:sticky;top:24px;}
+  fieldset{border:1px solid var(--border);border-radius:6px;margin-bottom:16px;padding:14px 16px;}
+  legend{font-weight:bold;color:var(--navy);padding:0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;}
+  label{display:block;font-weight:bold;margin-bottom:6px;font-size:14px;line-height:1.4;}
+  .req{color:var(--red);}
+  .opt{color:#888;font-weight:normal;font-style:italic;}
+  input[type=text], input[type=tel], select{
+    width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:4px;font-size:14px;margin-bottom:4px;
+  }
+  .field-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .field-row > div{flex:1 1 220px;}
+  .doc-section{margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid #eee;}
+  .doc-section:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+  .doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;}
+  .doc-head label{margin-bottom:0;flex:1;}
+  .doc-desc{font-size:12px;color:#666;margin:2px 0 8px;line-height:1.5;}
+  input[type=file]{font-size:13px;}
+  .file-list{list-style:none;margin:8px 0 0;padding:0;font-size:13px;}
+  .file-list li{display:flex;justify-content:space-between;align-items:center;background:#f0f4f8;border-radius:4px;padding:4px 8px;margin-bottom:4px;}
+  .file-list button{background:none;border:none;color:var(--red);cursor:pointer;font-size:13px;font-weight:bold;}
+  .confirm-box{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:normal;background:#fff8e1;border:1px solid #f0d98c;border-radius:6px;padding:10px;line-height:1.6;}
+  .confirm-box input{margin-top:3px;}
+  .actions{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;}
+  button.primary{background:var(--navy);color:#fff;border:none;padding:12px 22px;border-radius:6px;font-size:15px;font-weight:bold;cursor:pointer;}
+  button.primary:disabled{background:#a9b8c5;cursor:not-allowed;}
+  button.secondary{background:#fff;color:var(--navy);border:1px solid var(--navy);padding:12px 22px;border-radius:6px;font-size:15px;cursor:pointer;}
+  button.example-link{background:none;border:1px solid var(--navy-light);color:var(--navy-light);padding:4px 10px;border-radius:14px;font-size:12px;cursor:pointer;white-space:nowrap;}
+  button.example-link:hover{background:var(--navy-light);color:#fff;}
+  aside h2{margin-top:0;font-size:15px;color:var(--navy);}
+  #checklistItems{list-style:none;padding:0;margin:0 0 14px;font-size:13px;}
+  #checklistItems li{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f0f0f0;}
+  #checklistItems li:last-child{border-bottom:none;}
+  .icon-ok{color:var(--green);font-weight:bold;}
+  .icon-bad{color:var(--red);font-weight:bold;}
+  #overallStatus{padding:10px;border-radius:6px;font-weight:bold;text-align:center;font-size:14px;}
+  .status-complete{background:var(--green-bg);color:var(--green);}
+  .status-incomplete{background:var(--red-bg);color:var(--red);}
+  #message{margin-top:16px;padding:12px;border-radius:6px;font-size:14px;line-height:1.6;}
+  .msg-success{background:var(--green-bg);color:var(--green);border:1px solid #b6e3c1;}
+  .msg-error{background:var(--red-bg);color:var(--red);border:1px solid #f5c6cb;}
+  .privacy{font-size:12px;color:#777;margin-top:18px;line-height:1.6;}
+
+  /* Modal */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);
+    align-items:center;justify-content:center;z-index:1000;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{background:#fff;border-radius:8px;max-width:480px;width:100%;max-height:90vh;overflow:auto;padding:18px;}
+  .modal-box h3{margin:0 0 4px;color:var(--navy);font-size:16px;}
+  .modal-box .modal-sub{font-size:12px;color:#888;margin:0 0 12px;}
+  .modal-box svg{width:100%;border:1px solid var(--border);border-radius:4px;}
+  .modal-close{margin-top:14px;background:var(--navy);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:14px;float:right;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Client Document Submission / 客户资料提交</h1>
+  <p class="subtitle">
+    Upload all client documents received via WeChat. The form cannot be submitted until every required item is provided. On submit, everything is merged into a single PDF.<br>
+    请上传通过微信收到的所有客户资料。所有必填项目齐全后才能提交。提交后系统会将全部资料合并为一个PDF文件。
+  </p>
+
+  <div class="layout">
+    <form id="docForm">
+      <fieldset>
+        <legend>Client Details / 客户信息</legend>
+        <div class="field-row">
+          <div>
+            <label for="clientName">Client Name / 客户姓名 <span class="req">*</span></label>
+            <input type="text" id="clientName" placeholder="e.g. HAO YANG / 例：杨浩">
+          </div>
+          <div>
+            <label for="passportNumber">Passport Number / 护照号码 <span class="req">*</span></label>
+            <input type="text" id="passportNumber" placeholder="e.g. EN9524828">
+          </div>
+        </div>
+        <div class="field-row">
+          <div>
+            <label for="phoneNumber">Phone Number / 电话号码 <span class="req">*</span></label>
+            <input type="tel" id="phoneNumber" placeholder="e.g. 088-672-1466">
+          </div>
+          <div>
+            <label for="networkProvider">Network Provider / 网络运营商 <span class="req">*</span></label>
+            <select id="networkProvider">
+              <option value="">Select / 请选择...</option>
+              <option>AIS</option>
+              <option>DTAC</option>
+              <option>TRUE</option>
+              <option value="Other">Other / 其他</option>
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset id="categoryFieldset">
+        <legend>Documents / 证件资料</legend>
+        <!-- document sections injected by JS -->
+      </fieldset>
+
+      <fieldset>
+        <legend>Phone Verification / 电话号码核实</legend>
+        <div class="confirm-box">
+          <input type="checkbox" id="phoneMatchConfirm">
+          <label style="font-weight:normal;margin:0;" for="phoneMatchConfirm">
+            I confirm the phone number above is registered to the <strong>same passport number</strong> shown above, verified directly with the network provider (e.g. dial *153# on AIS, or the equivalent check for DTAC/TRUE), and a screenshot of that verification is attached above. <span class="req">*</span><br><br>
+            本人确认以上电话号码与上方护照号码登记一致，已通过运营商核实（如AIS拨打 *153#，或DTAC/TRUE的相应查询方式），并已在上方上传核实截图。<span class="req">*</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="primary" id="submitBtn" disabled>Submit Form / 提交表单</button>
+        <button type="button" class="secondary" id="resetBtn">Reset Form / 重置表单</button>
+      </div>
+
+      <div id="message"></div>
+
+      <p class="privacy">
+        Your documents are merged into a single PDF in your browser, then submitted securely to BOC for verification.<br>
+        您的资料将在浏览器中合并为一个PDF文件，并安全提交至中国银行进行核实。
+      </p>
+    </form>
+
+    <aside>
+      <h2>Completion Checklist / 完成情况检查表</h2>
+      <ul id="checklistItems"></ul>
+      <div id="overallStatus"></div>
+    </aside>
+  </div>
+</div>
+
+<!-- Example modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3 id="modalTitle"></h3>
+    <p class="modal-sub">Example only — uses fake sample data, not a real client's document. / 仅为示例，使用虚构资料，并非真实客户文件。</p>
+    <div id="modalContent"></div>
+    <button class="modal-close" id="modalClose">Close / 关闭</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+// ====================== CONFIGURATION ======================
+// Paste your deployed Google Apps Script Web App URL here.
+// See Setup_Instructions.md for how to create this.
+// If left blank, the form falls back to downloading the merged PDF
+// to the client's device instead of uploading it to Google Drive.
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTb1vRYCy73CxEJS1q4vZ7GYsf8cxHpexXbj19RmatDR8n7heGcksxvmRJ6adAuQx3mw/exec';
+// =============================================================
+
+const CATEGORIES = [
+  {
+    id:'passport',
+    label:'Passport (bio-data page) / 护照（个人信息页）',
+    desc:'Photo, name, passport number, nationality, dates clearly visible. / 需清晰显示照片、姓名、护照号码、国籍及有效期。',
+    required:true, multiple:false
+  },
+  {
+    id:'oldPassport',
+    label:'Old Passport / 旧护照',
+    desc:'Previous passport, if any. / 如有旧护照，请上传。',
+    required:false, multiple:true
+  },
+  {
+    id:'visa',
+    label:'Visa / 签证',
+    desc:'Visa page(s) / entry stamps showing valid permission to stay. / 签证页或入境章，需显示有效停留许可。',
+    required:true, multiple:true
+  },
+  {
+    id:'workPermit',
+    label:'Work Permit / 工作许可证',
+    desc:'Work permit booklet pages (front cover + employer/details page). / 工作证封面及雇主信息页。',
+    required:true, multiple:true
+  },
+  {
+    id:'chinaId',
+    label:'China ID Card / 中国身份证',
+    desc:'Front and back of the Chinese national ID card (居民身份证). / 中国居民身份证正反面。',
+    required:true, multiple:true
+  },
+  {
+    id:'phoneProof',
+    label:'Phone Verification Screenshot / 电话号码核实截图',
+    desc:'Screenshot from network provider (TRUE/DTAC/AIS) showing the registered passport number matches. / 运营商（TRUE/DTAC/AIS）查询截图，需显示登记的护照号码一致。',
+    required:true, multiple:true
+  },
+];
+
+// ---------------- Example illustrations (fake sample data only) ----------------
+const EXAMPLE_SVGS = {
+  passport: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="200" fill="#f5efe0" stroke="#999"/>
+      <text x="160" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">PASSPORT 护照</text>
+      <rect x="14" y="30" width="76" height="96" fill="#ddd" stroke="#999"/>
+      <text x="52" y="80" text-anchor="middle" font-size="9" fill="#888">PHOTO</text>
+      <g font-size="10" fill="#333">
+        <text x="100" y="44">Surname / 姓: SAMPLE</text>
+        <text x="100" y="60">Given Names / 名: EXAMPLE</text>
+        <text x="100" y="76">Passport No. / 护照号: P0000000</text>
+        <text x="100" y="92">Nationality / 国籍: CHINESE</text>
+        <text x="100" y="108">Date of Birth / 出生日期: 01 JAN 1990</text>
+        <text x="100" y="124">Date of Expiry / 有效期至: 01 JAN 2030</text>
+      </g>
+      <text x="160" y="170" text-anchor="middle" font-size="34" fill="#cc0000" opacity="0.3" transform="rotate(-18 160 170)">SAMPLE 示例</text>
+    </svg>`,
+  oldPassport: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="200" fill="#f5efe0" stroke="#999"/>
+      <text x="160" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">OLD / PREVIOUS PASSPORT 旧护照</text>
+      <rect x="14" y="30" width="76" height="96" fill="#ddd" stroke="#999"/>
+      <text x="52" y="80" text-anchor="middle" font-size="9" fill="#888">PHOTO</text>
+      <g font-size="10" fill="#333">
+        <text x="100" y="44">Surname / 姓: SAMPLE</text>
+        <text x="100" y="60">Given Names / 名: EXAMPLE</text>
+        <text x="100" y="76">Passport No. / 护照号: P9999999</text>
+        <text x="100" y="92">Nationality / 国籍: CHINESE</text>
+        <text x="100" y="108">Date of Issue / 签发日期: 01 JAN 2014</text>
+        <text x="100" y="124">Date of Expiry / 有效期至: 01 JAN 2024</text>
+      </g>
+      <text x="170" y="120" text-anchor="middle" font-size="30" fill="#cc0000" opacity="0.45" transform="rotate(-18 170 120)">EXPIRED 已注销</text>
+      <text x="160" y="170" text-anchor="middle" font-size="28" fill="#cc0000" opacity="0.3" transform="rotate(-18 160 170)">SAMPLE 示例</text>
+    </svg>`,
+  visa: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="200" fill="#eef3fb" stroke="#999"/>
+      <text x="160" y="20" text-anchor="middle" font-size="13" font-weight="bold" fill="#333">VISA 签证</text>
+      <rect x="14" y="30" width="76" height="96" fill="#ddd" stroke="#999"/>
+      <text x="52" y="80" text-anchor="middle" font-size="9" fill="#888">PHOTO</text>
+      <g font-size="10" fill="#333">
+        <text x="100" y="44">Visa No. / 签证号: V0000000</text>
+        <text x="100" y="60">Type / 类型: NON-IMMIGRANT B</text>
+        <text x="100" y="76">Entries / 入境次数: MULTIPLE</text>
+        <text x="100" y="92">Valid Until / 有效期至: 01 JAN 2027</text>
+        <text x="100" y="108">Issued At / 签发地: BANGKOK</text>
+      </g>
+      <rect x="18" y="140" width="80" height="36" fill="none" stroke="#c0392b" stroke-width="1.5" rx="4"/>
+      <text x="58" y="155" text-anchor="middle" font-size="8" fill="#c0392b">ENTRY STAMP</text>
+      <text x="58" y="168" text-anchor="middle" font-size="8" fill="#c0392b">入境章 示例</text>
+      <rect x="108" y="140" width="80" height="36" fill="none" stroke="#c0392b" stroke-width="1.5" rx="4"/>
+      <text x="148" y="155" text-anchor="middle" font-size="8" fill="#c0392b">ENTRY STAMP</text>
+      <text x="148" y="168" text-anchor="middle" font-size="8" fill="#c0392b">入境章 示例</text>
+      <text x="250" y="170" text-anchor="middle" font-size="28" fill="#1F4E78" opacity="0.3" transform="rotate(-18 250 170)">SAMPLE 示例</text>
+    </svg>`,
+  workPermit: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="200" fill="#fbf6e9" stroke="#999"/>
+      <text x="160" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">WORK PERMIT ใบอนุญาตทำงาน / 工作许可证</text>
+      <rect x="14" y="28" width="70" height="92" fill="#ddd" stroke="#999"/>
+      <text x="49" y="76" text-anchor="middle" font-size="9" fill="#888">PHOTO</text>
+      <g font-size="10" fill="#333">
+        <text x="94" y="42">Work Permit No. / 证号: wp0000/2569</text>
+        <text x="94" y="58">Name / 姓名: MR. SAMPLE NAME</text>
+        <text x="94" y="74">Nationality / 国籍: Chinese</text>
+        <text x="94" y="90">Employer / 雇主: SAMPLE CO., LTD.</text>
+        <text x="94" y="106">Date of Issue / 签发日期: 09 SEP 2025</text>
+        <text x="94" y="122">Date of Expiry / 到期日期: 28 NOV 2026</text>
+      </g>
+      <line x1="14" y1="132" x2="306" y2="132" stroke="#bbb"/>
+      <text x="14" y="150" font-size="10" fill="#333">Employer / 用人单位: SAMPLE CO., LTD.</text>
+      <text x="14" y="166" font-size="10" fill="#333">Position / 职位: GENERAL MANAGER</text>
+      <text x="160" y="190" text-anchor="middle" font-size="26" fill="#cc0000" opacity="0.3" transform="rotate(-12 160 190)">SAMPLE 示例</text>
+    </svg>`,
+  chinaId: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="96" y="0" fill="#eaf3ff" stroke="#999"/>
+      <rect x="12" y="14" width="60" height="70" fill="#ddd" stroke="#999"/>
+      <text x="42" y="52" text-anchor="middle" font-size="9" fill="#888">PHOTO</text>
+      <g font-size="10" fill="#333">
+        <text x="84" y="26">姓名 Name: 示例姓名</text>
+        <text x="84" y="42">性别 Sex: 男   民族 Ethnicity: 汉</text>
+        <text x="84" y="58">出生 DOB: 1990.01.01</text>
+        <text x="84" y="74">住址 Address: 示例省示例市示例路1号</text>
+      </g>
+      <text x="84" y="90">公民身份号码 ID No.: 000000 199001011234</text>
+      <rect width="320" height="96" y="104" fill="#eaf3ff" stroke="#999"/>
+      <text x="160" y="128" text-anchor="middle" font-size="11" font-weight="bold" fill="#333">中华人民共和国 居民身份证 (背面 / Back)</text>
+      <text x="20" y="150" font-size="10" fill="#333">签发机关 Issuing Authority: 示例市公安局</text>
+      <text x="20" y="168" font-size="10" fill="#333">有效期限 Valid Period: 2020.01.01-2040.01.01</text>
+      <text x="220" y="190" text-anchor="middle" font-size="26" fill="#1F4E78" opacity="0.3" transform="rotate(-15 220 190)">SAMPLE 示例</text>
+    </svg>`,
+  phoneProof: `
+    <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" font-family="Arial">
+      <rect width="320" height="200" fill="#1c1c1c"/>
+      <rect x="20" y="14" width="280" height="172" fill="#fff" rx="6"/>
+      <text x="160" y="50" text-anchor="middle" font-size="22" fill="#333">*153#</text>
+      <rect x="34" y="100" width="252" height="58" fill="#eef6ee" stroke="#bcdcbc" rx="4"/>
+      <text x="44" y="120" font-size="9" fill="#333">081-234-5678 已通过证件号</text>
+      <text x="44" y="134" font-size="9" fill="#333">P0000000 注册成功</text>
+      <text x="44" y="148" font-size="9" fill="#333">Registered to passport No. P0000000</text>
+      <text x="160" y="180" text-anchor="middle" font-size="9" fill="#1F4E78">[确定 / OK]</text>
+      <text x="160" y="80" text-anchor="middle" font-size="22" fill="#cc0000" opacity="0.35" transform="rotate(-12 160 80)">SAMPLE 示例</text>
+    </svg>`,
+};
+
+const EXAMPLE_TITLES = {
+  passport: 'Example: Passport / 示例：护照',
+  oldPassport: 'Example: Old Passport / 示例：旧护照',
+  visa: 'Example: Visa / 示例：签证',
+  workPermit: 'Example: Work Permit / 示例：工作许可证',
+  chinaId: 'Example: China ID Card / 示例：中国身份证',
+  phoneProof: 'Example: Phone Verification Screenshot / 示例：电话号码核实截图',
+};
+
+const state = { files: {} };
+CATEGORIES.forEach(c => state.files[c.id] = []);
+
+const categoryFieldset = document.getElementById('categoryFieldset');
+
+CATEGORIES.forEach(cat => {
+  const section = document.createElement('div');
+  section.className = 'doc-section';
+  section.innerHTML = `
+    <div class="doc-head">
+      <label>${cat.label} ${cat.required ? '<span class="req">*</span>' : '<span class="opt">(optional / 可选)</span>'}</label>
+      <button type="button" class="example-link" data-example="${cat.id}">View Example / 查看示例</button>
+    </div>
+    <p class="doc-desc">${cat.desc}</p>
+    <input type="file" id="file-${cat.id}" accept="image/*,.pdf" ${cat.multiple ? 'multiple' : ''}>
+    <ul class="file-list" id="list-${cat.id}"></ul>
+  `;
+  categoryFieldset.appendChild(section);
+
+  document.getElementById(`file-${cat.id}`).addEventListener('change', (e) => {
+    const newFiles = Array.from(e.target.files);
+    if (cat.multiple) {
+      state.files[cat.id] = state.files[cat.id].concat(newFiles);
+    } else {
+      state.files[cat.id] = newFiles.slice(0,1);
+    }
+    e.target.value = '';
+    renderFileList(cat.id);
+    updateChecklist();
+  });
+});
+
+// Example modal wiring
+const modalOverlay = document.getElementById('modalOverlay');
+const modalTitle = document.getElementById('modalTitle');
+const modalContent = document.getElementById('modalContent');
+document.getElementById('modalClose').addEventListener('click', () => modalOverlay.classList.remove('open'));
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) modalOverlay.classList.remove('open'); });
+
+categoryFieldset.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-example]');
+  if (!btn) return;
+  const id = btn.getAttribute('data-example');
+  modalTitle.textContent = EXAMPLE_TITLES[id];
+  modalContent.innerHTML = EXAMPLE_SVGS[id];
+  modalOverlay.classList.add('open');
+});
+
+function renderFileList(catId) {
+  const ul = document.getElementById(`list-${catId}`);
+  ul.innerHTML = '';
+  state.files[catId].forEach((f, idx) => {
+    const li = document.createElement('li');
+    const sizeKb = (f.size/1024).toFixed(0);
+    li.innerHTML = `<span>${f.name} (${sizeKb} KB)</span>`;
+    const btn = document.createElement('button');
+    btn.textContent = 'Remove / 删除';
+    btn.type = 'button';
+    btn.onclick = () => {
+      state.files[catId].splice(idx,1);
+      renderFileList(catId);
+      updateChecklist();
+    };
+    li.appendChild(btn);
+    ul.appendChild(li);
+  });
+}
+
+const clientName = document.getElementById('clientName');
+const passportNumber = document.getElementById('passportNumber');
+const phoneNumber = document.getElementById('phoneNumber');
+const networkProvider = document.getElementById('networkProvider');
+const phoneMatchConfirm = document.getElementById('phoneMatchConfirm');
+const submitBtn = document.getElementById('submitBtn');
+const checklistItems = document.getElementById('checklistItems');
+const overallStatus = document.getElementById('overallStatus');
+const messageBox = document.getElementById('message');
+
+[clientName, passportNumber, phoneNumber, networkProvider].forEach(el => el.addEventListener('input', updateChecklist));
+networkProvider.addEventListener('change', updateChecklist);
+phoneMatchConfirm.addEventListener('change', updateChecklist);
+
+function checklistRows() {
+  const rows = [];
+  rows.push({ label:'Client Name / 客户姓名', ok: clientName.value.trim().length > 0 });
+  rows.push({ label:'Passport Number / 护照号码', ok: passportNumber.value.trim().length > 0 });
+  rows.push({ label:'Phone Number / 电话号码', ok: phoneNumber.value.trim().length > 0 });
+  rows.push({ label:'Network Provider / 网络运营商', ok: networkProvider.value.length > 0 });
+  CATEGORIES.forEach(cat => {
+    if (cat.required) {
+      rows.push({ label: cat.label, ok: state.files[cat.id].length > 0 });
+    }
+  });
+  rows.push({ label:'Phone matches passport (confirmed) / 电话号码与护照一致（已确认）', ok: phoneMatchConfirm.checked });
+  return rows;
+}
+
+function updateChecklist() {
+  const rows = checklistRows();
+  checklistItems.innerHTML = '';
+  let allOk = true;
+  rows.forEach(r => {
+    if (!r.ok) allOk = false;
+    const li = document.createElement('li');
+    li.innerHTML = `<span class="${r.ok ? 'icon-ok' : 'icon-bad'}">${r.ok ? '✔' : '✖'}</span><span>${r.label}</span>`;
+    checklistItems.appendChild(li);
+  });
+  overallStatus.textContent = allOk ? 'Complete - ready to submit / 已完成 - 可以提交' : 'Incomplete / 未完成';
+  overallStatus.className = allOk ? 'status-complete' : 'status-incomplete';
+  submitBtn.disabled = !allOk;
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('docForm').reset();
+  CATEGORIES.forEach(cat => { state.files[cat.id] = []; renderFileList(cat.id); });
+  messageBox.innerHTML = '';
+  messageBox.className = '';
+  updateChecklist();
+});
+
+submitBtn.addEventListener('click', async () => {
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Submitting... / 正在提交...';
+  messageBox.innerHTML = '';
+  messageBox.className = '';
+  try {
+    const bytes = await buildMergedPdf();
+    const safeName = clientName.value.trim().replace(/[^a-zA-Z0-9_\-一-鿿 ]/g,'').replace(/\s+/g,'_') || 'client';
+    const filename = `${safeName}_merged.pdf`;
+
+    if (SCRIPT_URL && SCRIPT_URL.startsWith('http')) {
+      // Upload merged PDF + submission details to Google Drive via Apps Script
+      const payload = {
+        filename,
+        pdfBase64: bytesToBase64(bytes),
+        clientName: clientName.value.trim(),
+        passportNumber: passportNumber.value.trim(),
+        phoneNumber: phoneNumber.value.trim(),
+        networkProvider: networkProvider.value,
+        phoneVerified: phoneMatchConfirm.checked,
+        documents: CATEGORIES.filter(c => state.files[c.id].length > 0).map(c => c.label.split(' / ')[0])
+      };
+
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || 'Upload failed');
+
+      messageBox.className = 'msg-success';
+      messageBox.innerHTML = `Submission received. Thank you — your documents have been sent securely to BOC.<br>提交成功，谢谢！您的资料已安全发送至中国银行。`;
+    } else {
+      // No backend configured yet: fall back to local download
+      downloadBytes(bytes, filename);
+      messageBox.className = 'msg-success';
+      messageBox.innerHTML = `Submission complete. Your documents have been merged into "${filename}" and downloaded.<br>提交完成，您的资料已合并为 "${filename}" 并已下载。`;
+    }
+  } catch (err) {
+    console.error(err);
+    messageBox.className = 'msg-error';
+    messageBox.innerHTML = `Error submitting form: ${err.message}. Please try again, or contact BOC staff.<br>提交表单时出错：${err.message}。请重试或联系中国银行工作人员。`;
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Submit Form / 提交表单';
+  }
+});
+
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+  }
+  return btoa(binary);
+}
+
+async function buildMergedPdf() {
+  const { PDFDocument, StandardFonts, rgb } = PDFLib;
+  const pdfDoc = await PDFDocument.create();
+  const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  const fontReg = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+  const A4_W = 595.28, A4_H = 841.89;
+  const cover = pdfDoc.addPage([A4_W, A4_H]);
+  let y = A4_H - 60;
+
+  cover.drawText('Client Document Submission Summary', { x:50, y, size:16, font:fontBold, color: rgb(0.122,0.306,0.471) });
+  y -= 34;
+
+  const infoLines = [
+    ['Client Name', clientName.value.trim()],
+    ['Passport Number', passportNumber.value.trim()],
+    ['Phone Number', phoneNumber.value.trim()],
+    ['Network Provider', networkProvider.value],
+    ['Phone verified to match passport', phoneMatchConfirm.checked ? 'Yes' : 'No'],
+    ['Generated', new Date().toLocaleString()],
+  ];
+  infoLines.forEach(([k,v]) => {
+    cover.drawText(`${k}:`, { x:50, y, size:11, font:fontBold });
+    cover.drawText(`${v}`, { x:230, y, size:11, font:fontReg });
+    y -= 20;
+  });
+
+  y -= 14;
+  cover.drawText('Documents included:', { x:50, y, size:12, font:fontBold });
+  y -= 20;
+  CATEGORIES.forEach(cat => {
+    const count = state.files[cat.id].length;
+    const statusText = count > 0 ? `${count} file(s) attached` : (cat.required ? 'MISSING' : 'Not provided');
+    const color = count > 0 ? rgb(0.12,0.49,0.2) : (cat.required ? rgb(0.75,0.22,0.17) : rgb(0.5,0.5,0.5));
+    const plainLabel = cat.label.split(' / ')[0];
+    cover.drawText(`- ${plainLabel}: `, { x:60, y, size:11, font:fontReg });
+    cover.drawText(statusText, { x:260, y, size:11, font:fontBold, color });
+    y -= 18;
+  });
+
+  for (const cat of CATEGORIES) {
+    for (const file of state.files[cat.id]) {
+      await appendFile(pdfDoc, file, cat.label.split(' / ')[0], fontReg);
+    }
+  }
+
+  return pdfDoc.save();
+}
+
+async function appendFile(pdfDoc, file, label, font) {
+  const { PDFDocument } = PDFLib;
+  const A4_W = 595.28, A4_H = 841.89;
+  const bytes = await file.arrayBuffer();
+
+  if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    const src = await PDFDocument.load(bytes);
+    const copied = await pdfDoc.copyPages(src, src.getPageIndices());
+    copied.forEach(p => pdfDoc.addPage(p));
+    return;
+  }
+
+  let img;
+  if (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) {
+    img = await pdfDoc.embedPng(bytes);
+  } else {
+    img = await pdfDoc.embedJpg(bytes);
+  }
+
+  const page = pdfDoc.addPage([A4_W, A4_H]);
+  const margin = 30;
+  const maxW = A4_W - margin*2;
+  const maxH = A4_H - margin*2 - 24;
+  const scale = Math.min(maxW / img.width, maxH / img.height);
+  const w = img.width * scale;
+  const h = img.height * scale;
+  page.drawText(label, { x: margin, y: A4_H - margin - 14, size: 11, font, color: PDFLib.rgb(0.3,0.3,0.3) });
+  page.drawImage(img, { x: (A4_W - w) / 2, y: (A4_H - h - margin) / 2, width: w, height: h });
+}
+
+function downloadBytes(bytes, filename) {
+  const blob = new Blob([bytes], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+updateChecklist();
+</script>
+</body>
+</html>
